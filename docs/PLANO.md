@@ -67,7 +67,7 @@ Regras de dono:
 ## 5. Migrations (histórico do banco)
 
 - Ferramenta: **Flyway** rodando no container do Java (ou container próprio de migração) na subida.
-- Arquivos em `uninoVet/db/migrations/`, nome `V001__estrutura_inicial.sql`, `V002__usuarios_e_perfis.sql`, ...
+- Arquivos em `db/migrations/`, nome `V001__estrutura_inicial.sql`, `V002__usuarios_e_perfis.sql`, ...
 - Regras: nunca editar uma migration já aplicada; mudança nova = arquivo novo.
 - A tabela `flyway_schema_history` registra o que rodou, quando e o checksum.
 - `V001` = o `init.sql` atual convertido. Dados de exemplo ficam em `R__dados_exemplo.sql` (repetível) ou em perfil de desenvolvimento.

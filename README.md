@@ -9,21 +9,35 @@ Clínica veterinária com quatro partes, todas em container:
 
 ## Como rodar
 
-Só precisa de Docker. Na pasta `uninoVet`:
+Só precisa de Docker (com Compose v2). Na raiz do repositório:
 
 ```
-docker compose up
+make up
 ```
 
 Abra **uma porta só**: http://localhost:3000
 
-- `/` → aplicativo (Flutter)
-- `/admin` → painel administrativo (Java)
+- `/` → app do cliente (Flutter)
+- `/clinica/` → aplicação da clínica (Java); `/admin` redireciona para `/clinica/admin`
 - `/api/...` → API dos agendamentos (consumida pelo app)
 
-Por que uma porta só: no Codespace cada porta vira um endereço diferente, então o app não acharia a API em `localhost:8080`. Com o proxy é tudo na mesma origem, sem CORS. As portas diretas continuam disponíveis se quiser (app em 5000, painel em 8080).
+Por que uma porta só: no Codespace cada porta vira um endereço diferente, então o app não acharia a API em `localhost:8080`. Com o proxy é tudo na mesma origem, sem CORS. As portas diretas continuam disponíveis se quiser (app em 5000, clínica em 8080).
 
-Para parar: `docker compose down`.
+O compose sobe na ordem certa (banco → Java, aguardando o healthcheck → app Flutter + proxy). Na primeira vez, o build das imagens e a compilação do Flutter demoram; acompanhe com `make logs`.
+
+| Comando | O que faz |
+|---|---|
+| `make up` | Sobe banco, clínica, app e proxy (portas 3000, 5000 e 8080) |
+| `make logs` | Acompanha os logs de todos os serviços |
+| `make ps` | Mostra o estado dos serviços |
+| `make rebuild` | Reconstrói as imagens e sobe de novo |
+| `make down` | Desliga tudo |
+
+Sem `make`, o equivalente é `docker compose --profile proxy up -d` (e `docker compose --profile proxy down` para parar). Sem o `--profile proxy` a porta 3000 não sobe.
+
+### Codespace
+
+O `.devcontainer/` cria um ambiente Ubuntu 24.04 com **Docker-in-Docker**, Compose v2, Node e `make`. Ao abrir o Codespace, rode `make up` e abra a porta **3000** pela aba **PORTS**. Se o Codespace já existia antes dessa configuração, execute **Codespaces: Rebuild Container** pela paleta de comandos; o erro `/var/run/docker.sock: no such file or directory` indica que o daemon do Docker não está disponível.
 
 ## Três aplicações
 
@@ -33,7 +47,7 @@ Para parar: `docker compose down`.
 | **App do cliente** (Flutter) | `5000` | Tutor: login, pets, solicitar/cancelar consulta, documentos |
 | **Aplicação da clínica** (Java) | `8080` | Veterinário, secretário e gerente: `/painel`, `/agenda`, `/solicitacoes`, `/usuarios`; o painel antigo virou o módulo **`/admin`** (só gerente) |
 
-No Codespace use `make uninovet` (na raiz do repositório) e abra a porta **3000** pela aba PORTS: é a única em que app e API ficam na mesma origem. Se quiser ver as outras separadas, abra 5000 e 8080 (portas privadas do Codespace podem pedir login do GitHub).
+No Codespace use `make up` e abra a porta **3000** pela aba PORTS: é a única em que app e API ficam na mesma origem. Se quiser ver as outras separadas, abra 5000 e 8080 (portas privadas do Codespace podem pedir login do GitHub).
 
 ### Contas de exemplo (só desenvolvimento)
 
@@ -64,10 +78,12 @@ Senha com PBKDF2 + sal; API por token (7 dias) e painel por sessão com token CS
 ## Estrutura
 
 ```
-uninoVet/
-  docker-compose.yml   sobe os quatro serviços
-  db/init.sql          banco já pronto (tabelas + dados)
-  web/                 painel em Java + API
-  mobile/              aplicativo Flutter
-  proxy/nginx.conf     junta /, /admin e /api numa porta só
+docker-compose.yml   sobe os quatro serviços
+Makefile             atalhos (make help)
+db/init.sql          banco já pronto (tabelas + dados)
+web/                 aplicação da clínica em Java + API
+mobile/              aplicativo Flutter
+proxy/nginx.conf     junta /, /clinica/ e /api numa porta só
+docs/                plano, status dos requisitos e documentação (PDF)
+.devcontainer/       ambiente do Codespace (Docker-in-Docker)
 ```
