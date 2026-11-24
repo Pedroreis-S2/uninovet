@@ -1,2 +1,20 @@
-*.sh text eol=lf
-*.py text eol=lf
+# Arquivos binarios: sem conversao de fim de linha (evita corromper).
+*.pdf  binary
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.ico  binary
+*.apk  binary
+*.jar  binary
+*.otf  binary
+*.ttf  binary
+*.wasm binary
+
+# Arquivos que rodam no Linux (container/Codespace): sempre LF, mesmo clonando
+# no Windows (CRLF quebraria o make, o sh e o python dos containers).
+Makefile    text eol=lf
+*.sh        text eol=lf
+*.py        text eol=lf
+*.conf      text eol=lf
+*.sql       text eol=lf
+Dockerfile* text eol=lf
